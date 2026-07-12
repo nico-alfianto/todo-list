@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diary To Do</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Caveat:wght@700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; }
+body { background: linear-gradient(135deg, #fde68a 0%, #fecaca 100%); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+
+/* BUKU DIARY */
+.book { display: flex; width: 100%; max-width: 1000px; gap: 20px; perspective: 1000px; }
+.page { background: #fffdf5; padding: 30px; border-radius: 8px 20px 20px 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 2px solid #f3e8ff; background-image:
+  linear-gradient(#e0e7ff 1px, transparent 1px),
+  linear-gradient(90deg, #fca5a5 2px, transparent 2px);
+  background-size: 100% 32px, 40px 100%;
+  flex: 1; min-height: 600px; position: relative; }
+.page::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #fecaca; }
+.page-title { font-family: 'Caveat', cursive; font-size: 28px; color: #3b82f6; text-align: center; margin-bottom: 20px; border-bottom: 3px dashed #bfdbfe; padding-bottom: 10px; }
+
+/* LOGIN FULL */
+.login-box { background: #fffdf5; width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 2px solid #f3e8ff; }
+
+/* TOMBOL RESPONSIVE TEBEL */
+.btn-add,.btn-login,.btn-notif { background: #60a5fa; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 16px; transition: all 0.12s ease; box-shadow: 0 5px 0 #2563eb; width: 100%; }
+.btn-add:hover,.btn-login:hover,.btn-notif:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #2563eb; }
+.btn-add:active,.btn-login:active,.btn-notif:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 #2563eb;
+  background: #2563eb;
+  border: 3px solid #1d4ed8;
+}
+
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 12px; border: 3px solid #bfdbfe; background: white; border-radius: 12px; cursor: pointer; color: #3b82f6; font-weight: 700; transition: all 0.12s ease; box-shadow: 0 4px 0 #bfdbfe; }
+.tab-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #bfdbfe; border-width: 4px; }
+.tab-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+.filters { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn { padding: 8px 14px; border: 3px solid #bfdbfe; background: white; border-radius: 16px; cursor: pointer; color: #3b82f6; font-weight: 700; font-size: 13px; transition: all 0.12s ease; box-shadow: 0 3px 0 #bfdbfe; }
+.filter-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #bfdbfe; border-width: 4px; }
+.filter-btn.active { background: #3b82f6; color: white; }
+
+input, textarea, select { padding: 12px; border: 2px solid #dbeafe; border-radius: 12px; font-size: 14px; background: white; width: 100%; margin-bottom: 10px; }
+.input-box { display: flex; flex-direction: column; }
+
+.task { background: rgba(239, 246, 255, 0.7); padding: 14px; margin-bottom: 12px; border-radius: 12px; border-left: 4px solid #60a5fa; }
+.task.completed { background: rgba(240, 253, 244, 0.7); border-left-color: #4ade80; }
+.task-header { display: flex; align-items: center; gap: 10px; }
+.task-text { flex: 1; font-weight: 700; color: #1e3a8a; }
+.category-badge { padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 900; }
+.cat-harian { background: #fef3c7; color: #d97706; }
+.cat-sekolah { background: #dbeafe; color: #1e40af; }
+.cat-kuliah { background: #e0e7ff; color: #4338ca; }
+.cat-kerja { background: #fee2e2; color: #b91c1c; }
+.cat-pribadi { background: #dcfce7; color: #166534; }
+
+.btn-delete { background: #fca5a5; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 700; box-shadow: 0 3px 0 #ef4444; }
+.btn-delete:active { transform: translateY(3px); box-shadow: 0 0 0 #ef4444; }
+
+.btn-logout { background: #93c5fd; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 20px; box-shadow: 0 4px 0 #3b82f6; }
+.btn-logout:active { transform: translateY(4px); box-shadow: 0 0 0 #3b82f6; }
+
+.message-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: #fffdf5; padding: 25px; border-radius: 20px; border: 4px solid #93c5fd; text-align: center; z-index: 999; transition: 0.4s; }
+.message-box.show { transform: translate(-50%, -50%) scale(1); }
+.message-text { font-family: 'Caveat', cursive; font-size: 22px; color: #3b82f6; }
+
+/* RESPONSIVE: HP = 1 HALAMAN, TABLET/LAPTOP = 2 HALAMAN */
+@media (max-width: 900px) {
+ .book { flex-direction: column; }
+ .page { min-height: auto; }
+}
+@media (max-width: 600px) {
+  body { padding: 10px; }
+ .page { padding: 20px; background-size: 100% 28px, 30px 100%; }
+ .page-title { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h2 class="page-title">Buku Diary Ku</h2>
+  <input type="text" id="nameInput" placeholder="Nama kamu">
+  <input type="date" id="birthInput">
+  <button class="btn-login" onclick="login()">Buka Diary</button>
+</div>
+
+<!-- BUKU -->
+<div class="book" id="mainApp" style="display:none;">
+  <!-- HALAMAN KIRI -->
+  <div class="page">
+    <h1 class="page-title">Halo, <span id="userName"></span>!</h1>
+    <button class="btn-notif" onclick="requestNotif()" id="notifBtn">Aktifkan Notifikasi</button>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('tasks', this)">Tugas</button>
+      <button class="tab-btn" onclick="showTab('history', this)">Riwayat</button>
+    </div>
+
+    <div class="tab-content active" id="tasks">
+      <div class="input-box">
+        <input type="text" id="taskInput" placeholder="Hari ini mau ngerjain apa...">
+        <select id="categoryInput">
+          <option value="Harian">Harian</option>
+          <option value="Sekolah">Sekolah</option>
+          <option value="Kuliah">Kuliah</option>
+          <option value="Kerja">Kerja</option>
+          <option value="Pribadi">Pribadi</option>
+        </select>
+        <textarea id="noteInput" placeholder="Catatan..." rows="2"></textarea>
+        <input type="date" id="dateInput">
+        <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx">
+        <button class="btn-add" onclick="addTask()">Tulis di Diary</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all', this)">Semua</button>
+        <button class="filter-btn" onclick="setFilter('active', this)">Belum</button>
+        <button class="filter-btn" onclick="setFilter('done', this)">Selesai</button>
+        <button class="filter-btn" onclick="setFilter('today', this)">Hari Ini</button>
+      </div>
+      <ul id="taskList"></ul>
+    </div>
+
+    <div class="tab-content" id="history">
+      <h3 class="page-title">Kenangan Tugas</h3>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setHistoryFilter('all', this)">Semua</button>
+        <button class="filter-btn" onclick="setHistoryFilter('Harian', this)">Harian</button>
+        <button class="filter-btn" onclick="setHistoryFilter('Sekolah', this)">Sekolah</button>
+        <button class="filter-btn" onclick="setHistoryFilter('Kuliah', this)">Kuliah</button>
+        <button class="filter-btn" onclick="setHistoryFilter('Kerja', this)">Kerja</button>
+        <button class="filter-btn" onclick="setHistoryFilter('Pribadi', this)">Pribadi</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Tutup Diary</button>
+  </div>
+
+  <!-- HALAMAN KANAN -->
+  <div class="page">
+    <h1 class="page-title">Catatan & Motivasi</h1>
+    <p style="color:#64748b; text-align:center; margin-bottom:20px;">Klik centang untuk dapat ucapan semangat!</p>
+    <div id="motivasiBox" style="background:white; padding:20px; border-radius:12px; border:2px dashed #bfdbfe;">
+      <p style="font-family:'Caveat', cursive; font-size:20px; color:#3b82f6;">"Satu halaman selesai, satu langkah lebih dekat ke mimpimu"</p>
+    </div>
+  </div>
+</div>
+
+<div class="message-box" id="messageBox"><div class="message-text" id="messageText"></div></div>
+
+<script>
+let user = JSON.parse(localStorage.getItem('userData')) || null;
+let tasks = JSON.parse(localStorage.getItem('tasks_' + (user? user.name:''))) || [];
+let currentFilter = 'all';
+let historyFilter = 'all';
+let notifSentToday = [];
+
+const goodMessages = [
+  "Keren banget! Satu halaman lagi selesai",
+  "Proud of you! Konsisten itu kunci",
+  "Yeay! Kamu hebat karena sudah mulai",
+  "Luar biasa! Bebanmu berkurang 1",
+  "Mantap! Terus semangat ya"
+];
+
+window.onload = function() {
+  if(user) {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'flex';
+    document.getElementById('userName').innerText = user.name;
+    checkBirthday();
+    renderTasks();
+    renderHistory();
+    checkNotifPermission();
+    setInterval(checkTasksForNotif, 60000);
+  }
+}
+
+function login() {
+  const name = document.getElementById('nameInput').value.trim();
+  const birth = document.getElementById('birthInput').value;
+  if(!name ||!birth) return alert('Isi nama dan tanggal lahir dulu ya');
+  user = { name, birth };
+  localStorage.setItem('userData', JSON.stringify(user));
+  location.reload();
+}
+
+function logout() {
+  if(confirm('Tutup diary?')) {
+    localStorage.removeItem('userData');
+    location.reload();
+  }
+}
+
+function requestNotif() {
+  Notification.requestPermission().then(permission => {
+    if(permission === 'granted') {
+      document.getElementById('notifBtn').innerText = 'Notifikasi Aktif';
+      document.getElementById('notifBtn').style.background = '#4ade80';
+    }
+  });
+}
+
+function checkNotifPermission() {
+  if(Notification.permission === 'granted') {
+    document.getElementById('notifBtn').innerText = 'Notifikasi Aktif';
+    document.getElementById('notifBtn').style.background = '#4ade80';
+  }
+}
+
+function checkTasksForNotif() {
+  if(Notification.permission!== 'granted' ||!user) return;
+  const today = new Date().toISOString().split('T')[0];
+  const todayTasks = tasks.filter(t => t.date === today &&!t.done);
+  todayTasks.forEach(task => {
+    if(!notifSentToday.includes(task.text)) {
+      new Notification(`Tugas ${task.category}`, { body: task.text });
+      notifSentToday.push(task.text);
+    }
+  });
+  if(new Date().getHours() === 0) notifSentToday = [];
+}
+
+function checkBirthday() {
+  const today = new Date();
+  const birth = new Date(user.birth);
+  if(today.getDate() === birth.getDate() && today.getMonth() === birth.getMonth()) {
+    setTimeout(() => showSpecialMessage(`Selamat Ulang Tahun, ${user.name}! 🎉`), 1000);
+  }
+}
+
+function showSpecialMessage(msg) {
+  const box = document.getElementById('messageBox');
+  document.getElementById('messageText').innerText = msg;
+  box.classList.add('show');
+  setTimeout(()=>box.classList.remove('show'), 3000);
+}
+
+function showMessage() {
+  const msg = goodMessages[Math.floor(Math.random() * goodMessages.length)];
+  showSpecialMessage(msg);
+}
+
+function saveTasks() { localStorage.setItem('tasks_' + user.name, JSON.stringify(tasks)); }
+function getCategoryClass(cat) { return 'cat-' + cat.toLowerCase(); }
+
+function renderTasks() {
+  const taskList = document.getElementById('taskList');
+  taskList.innerHTML = '';
+  let filtered = tasks.filter(t => {
+    if(currentFilter === 'active') return!t.done;
+    if(currentFilter === 'done') return t.done;
+    if(currentFilter === 'today') return t.date === new Date().toISOString().split('T')[0];
+    return true;
+  });
+  filtered.forEach((task, i) => {
+    const realIndex = tasks.indexOf(task);
+    taskList.innerHTML += `
+      <li class="task ${task.done? 'completed':''}">
+        <div class="task-header">
+          <input type="checkbox" ${task.done? 'checked':''} onchange="toggleTask(${realIndex})">
+          <span class="task-text">${task.text}<span class="category-badge ${getCategoryClass(task.category)}">${task.category}</span></span>
+        </div>
+        ${task.note? `<div style="font-size:12px; margin-top:5px;">${task.note}</div>` : ''}
+        <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px;">
+          <span>${task.date || ''}</span>
+          <button class="btn-delete" onclick="deleteTask(${realIndex})">Hapus</button>
+        </div>
+      </li>
+    `;
+  });
+}
+
+function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  let doneTasks = tasks.filter(t => t.done && t.completedAt);
+  if(historyFilter!== 'all') doneTasks = doneTasks.filter(t => t.category === historyFilter);
+  if(doneTasks.length === 0) {
+    historyList.innerHTML = '<p style="text-align:center; color:#94a3b8;">Belum ada catatan</p>';
+    return;
+  }
+  historyList.innerHTML = doneTasks.map(t => `
+    <div class="task">
+      <b>${t.text}</b> <span class="category-badge ${getCategoryClass(t.category)}">${t.category}</span><br>
+      <small>Selesai: ${new Date(t.completedAt).toLocaleString('id-ID')}</small>
+    </div>
+  `).join('');
+}
+
+function addTask() {
+  const text = document.getElementById('taskInput').value.trim();
+  if(text === '') return alert('Tulis dulu dong');
+  const newTask = { text, category: document.getElementById('categoryInput').value, note: document.getElementById('noteInput').value, date: document.getElementById('dateInput').value, done: false, completedAt: null };
+  tasks.push(newTask); saveTasks(); renderTasks(); renderHistory();
+  document.getElementById('taskInput').value = ''; document.getElementById('noteInput').value = ''; document.getElementById('dateInput').value = '';
+}
+
+function toggleTask(index) {
+  const wasDone = tasks[index].done;
+  tasks[index].done =!tasks[index].done;
+  if(!wasDone && tasks[index].done) { tasks[index].completedAt = new Date().toISOString(); showMessage(); }
+  if(wasDone &&!tasks[index].done) tasks[index].completedAt = null;
+  saveTasks(); renderTasks(); renderHistory();
+}
+
+function deleteTask(index) { if(confirm('Hapus?')) { tasks.splice(index, 1); saveTasks(); renderTasks(); renderHistory(); } }
+function setFilter(f, el) { currentFilter = f; document.querySelectorAll('#tasks.filter-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); renderTasks(); }
+function setHistoryFilter(f, el) { historyFilter = f; document.querySelectorAll('#history.filter-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); renderHistory(); }
+function showTab(tab, el) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); el.classList.add('active'); document.getElementById(tab).classList.add('active'); }
+</script>
+
+</body>
+</html>
