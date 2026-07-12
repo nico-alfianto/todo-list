@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To Do List Pribadi</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+body { background: linear-gradient(135deg, #dbeafe 0%, #fef9c3 100%); min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: center; }
+.container { background: white; width: 100%; max-width: 700px; padding: 30px; border-radius: 28px; box-shadow: 0 10px 40px rgba(147, 197, 253, 0.3); border: 4px dashed #bfdbfe; animation: float 3s ease-in-out infinite; display: none; }
+@keyframes float { 0%,100%{transform: translateY(0)} 50%{transform: translateY(-5px)} }
+h1 { text-align: center; color: #3b82f6; margin-bottom: 5px; font-size: 30px; font-weight: 900; }
+.subtitle { text-align: center; color: #60a5fa; margin-bottom: 25px; }
+
+/* LOGIN BOX */
+.login-box { background: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 28px; box-shadow: 0 10px 40px rgba(147, 197, 253, 0.3); border: 4px dashed #bfdbfe; }
+.login-box h2 { text-align: center; color: #3b82f6; margin-bottom: 20px; }
+.login-box input { width: 100%; margin-bottom: 12px; }
+
+.input-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+input, textarea { padding: 14px; border: 3px solid #dbeafe; border-radius: 16px; font-size: 15px; background: #f8faff; transition: 0.3s; }
+input:focus, textarea:focus { border-color: #3b82f6; outline: none; transform: scale(1.01); }
+.btn-add,.btn-login,.btn-notif { background: linear-gradient(90deg, #60a5fa, #93c5fd); color: white; border: none; padding: 14px; border-radius: 16px; font-weight: 900; cursor: pointer; font-size: 16px; transition: 0.2s; }
+.btn-add:hover,.btn-login:hover,.btn-notif:hover { transform: scale(1.05) rotate(-1deg); }
+
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab-btn { flex: 1; padding: 10px; border: 3px solid #bfdbfe; background: white; border-radius: 16px; cursor: pointer; color: #3b82f6; font-weight: 700; }
+.tab-btn.active { background: #3b82f6; color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn { padding: 10px 18px; border: 3px solid #bfdbfe; background: white; border-radius: 20px; cursor: pointer; color: #3b82f6; font-weight: 700; }
+.filter-btn.active { background: #3b82f6; color: white; }
+
+.task { background: #eff6ff; padding: 16px; margin-bottom: 14px; border-radius: 20px; border-left: 6px solid #60a5fa; animation: slideIn 0.4s ease; }
+@keyframes slideIn { from{opacity:0; transform: translateY(20px)} to{opacity:1; transform: translateY(0)} }
+.task.completed { background: #f0fdf4; border-left-color: #4ade80; }
+.task-header { display: flex; align-items: center; gap: 12px; }
+.task input[type="checkbox"] { width: 22px; height: 22px; accent-color: #3b82f6; }
+.task-text { flex: 1; font-size: 16px; color: #1e3a8a; font-weight: 700; }
+.task.completed.task-text { text-decoration: line-through; color: #94a3b8; }
+.task-note { font-size: 13px; color: #64748b; background: white; padding: 10px; border-radius: 12px; border: 2px dotted #dbeafe; margin-top: 8px; }
+.task-footer { display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px; }
+.badge { padding: 5px 12px; border-radius: 14px; font-weight: 900; }
+.badge.today { background: #fef3c7; color: #d97706; animation: bounce 1s infinite; }
+@keyframes bounce { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.badge.late { background: #fee2e2; color: #ef4444; }
+.badge.done { background: #dcfce7; color: #16a34a; }
+.btn-delete,.btn-logout { background: #fca5a5; color: white; border: none; padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+.btn-logout { background: #93c5fd; margin-top: 20px; width: 100%; }
+
+.history-item { background: #f0fdf4; padding: 12px; border-radius: 16px; margin-bottom: 10px; border-left: 4px solid #4ade80; }
+
+.message-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: white; padding: 30px 40px; border-radius: 24px; border: 4px solid #93c5fd; box-shadow: 0 10px 50px rgba(59, 130, 246, 0.3); text-align: center; z-index: 999; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+.message-box.show { transform: translate(-50%, -50%) scale(1); }
+.message-text { font-size: 20px; font-weight: 900; color: #3b82f6; }
+.confetti { position: fixed; width: 10px; height: 10px; position: absolute; animation: fall 1s linear; }
+@keyframes fall { to{transform: translateY(100vh) rotate(360deg); opacity:0} }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h2>Selamat Datang</h2>
+  <input type="text" id="nameInput" placeholder="Nama kamu">
+  <input type="date" id="birthInput" placeholder="Tanggal Lahir">
+  <button class="btn-login" onclick="login()">Masuk</button>
+</div>
+
+<!-- MAIN APP -->
+<div class="container" id="mainApp">
+  <h1>Halo, <span id="userName"></span>!</h1>
+  <p class="subtitle">Ayo selesaikan hari ini dengan semangat</p>
+
+  <button class="btn-notif" onclick="requestNotif()" id="notifBtn">Aktifkan Notifikasi</button>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('tasks', this)">Tugas</button>
+    <button class="tab-btn" onclick="showTab('history', this)">Riwayat</button>
+  </div>
+
+  <!-- TAB TUGAS -->
+  <div class="tab-content active" id="tasks">
+    <div class="input-box">
+      <input type="text" id="taskInput" placeholder="Mau ngerjain apa hari ini...">
+      <textarea id="noteInput" placeholder="Catatan biar gak lupa..." rows="2"></textarea>
+      <input type="date" id="dateInput">
+      <button class="btn-add" onclick="addTask()">Tambah Tugas</button>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Semua</button>
+      <button class="filter-btn" onclick="setFilter('active', this)">Belum</button>
+      <button class="filter-btn" onclick="setFilter('done', this)">Selesai</button>
+      <button class="filter-btn" onclick="setFilter('today', this)">Hari Ini</button>
+    </div>
+    <ul id="taskList"></ul>
+  </div>
+
+  <!-- TAB RIWAYAT -->
+  <div class="tab-content" id="history">
+    <h3 style="color:#3b82f6; margin-bottom:15px;">Riwayat Tugas Selesai</h3>
+    <div id="historyList"></div>
+  </div>
+
+  <button class="btn-logout" onclick="logout()">Keluar</button>
+</div>
+
+<div class="message-box" id="messageBox"><div class="message-text" id="messageText"></div></div>
+
+<script>
+let user = JSON.parse(localStorage.getItem('userData')) || null;
+let tasks = JSON.parse(localStorage.getItem('tasks_' + (user? user.name:''))) || [];
+let currentFilter = 'all';
+let notifSentToday = [];
+
+const goodMessages = [
+  "Keren banget! Satu langkah lagi menuju versi terbaik dirimu",
+  "Proud of you! Konsisten kecil = hasil besar",
+  "Yeay! Kamu hebat karena sudah mulai",
+  "Luar biasa! Tugas selesai, beban berkurang",
+  "Mantap! Semangatmu menginspirasi"
+];
+
+// CEK LOGIN
+if(user) {
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('userName').innerText = user.name;
+  checkBirthday();
+  renderTasks();
+  renderHistory();
+  checkNotifPermission();
+  setInterval(checkTasksForNotif, 60000); // cek tiap 1 menit
+}
+
+function login() {
+  const name = document.getElementById('nameInput').value.trim();
+  const birth = document.getElementById('birthInput').value;
+  if(!name ||!birth) return alert('Isi nama dan tanggal lahir dulu ya');
+  user = { name, birth };
+  localStorage.setItem('userData', JSON.stringify(user));
+  location.reload();
+}
+
+function logout() {
+  if(confirm('Yakin mau keluar?')) {
+    localStorage.removeItem('userData');
+    location.reload();
+  }
+}
+
+function requestNotif() {
+  Notification.requestPermission().then(permission => {
+    if(permission === 'granted') {
+      document.getElementById('notifBtn').innerText = 'Notifikasi Aktif';
+      document.getElementById('notifBtn').style.background = '#4ade80';
+      showSpecialMessage('Notifikasi sudah aktif! Aku akan ingetin kamu');
+    }
+  });
+}
+
+function checkNotifPermission() {
+  if(Notification.permission === 'granted') {
+    document.getElementById('notifBtn').innerText = 'Notifikasi Aktif';
+    document.getElementById('notifBtn').style.background = '#4ade80';
+  }
+}
+
+function checkTasksForNotif() {
+  if(Notification.permission!== 'granted' ||!user) return;
+  const today = new Date().toISOString().split('T')[0];
+  const todayTasks = tasks.filter(t => t.date === today &&!t.done);
+
+  todayTasks.forEach(task => {
+    if(!notifSentToday.includes(task.text)) {
+      new Notification('Tugas Hari Ini!', {
+        body: task.text + (task.note? '\nCatatan: ' + task.note : ''),
+        icon: 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png'
+      });
+      notifSentToday.push(task.text);
+    }
+  });
+
+  // reset tiap ganti hari
+  if(new Date().getHours() === 0) notifSentToday = [];
+}
+
+function checkBirthday() {
+  const today = new Date();
+  const birth = new Date(user.birth);
+  if(today.getDate() === birth.getDate() && today.getMonth() === birth.getMonth()) {
+    setTimeout(() => showSpecialMessage(`Selamat Ulang Tahun, ${user.name}! 🎉 Semoga semua tugas hari ini lancar dan tahun ini penuh pencapaian!`), 1000);
+    if(Notification.permission === 'granted') {
+      new Notification('Selamat Ulang Tahun!', { body: `Semoga harimu menyenangkan, ${user.name}!` });
+    }
+  }
+}
+
+function showSpecialMessage(msg) {
+  const box = document.getElementById('messageBox');
+  document.getElementById('messageText').innerText = msg;
+  box.classList.add('show');
+  confetti();
+  setTimeout(()=>box.classList.remove('show'), 3000);
+}
+
+function showMessage() {
+  const msg = goodMessages[Math.floor(Math.random() * goodMessages.length)];
+  showSpecialMessage(msg);
+}
+
+function confetti() {
+  for(let i=0; i<40; i++){
+    const c = document.createElement('div');
+    c.style.position = 'fixed';
+    c.style.width = '10px'; c.style.height = '10px';
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.background = ['#60a5fa','#93c5fd','#fbbf24','#4ade80','#fca5a5'][Math.floor(Math.random()*5)];
+    c.style.animation = 'fall 1s linear';
+    c.style.animationDelay = Math.random()*0.5 + 's';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 1000);
+  }
+}
+
+function saveTasks() { localStorage.setItem('tasks_' + user.name, JSON.stringify(tasks)); }
+
+function renderTasks() {
+  const taskList = document.getElementById('taskList');
+  taskList.innerHTML = '';
+  let filtered = tasks.filter(t => {
+    if(currentFilter === 'active') return!t.done;
+    if(currentFilter === 'done') return t.done;
+    if(currentFilter === 'today') return t.date === new Date().toISOString().split('T')[0];
+    return true;
+  });
+  filtered.forEach((task, i) => {
+    const realIndex = tasks.indexOf(task);
+    taskList.innerHTML += `
+      <li class="task ${task.done? 'completed':''}">
+        <div class="task-header">
+          <input type="checkbox" ${task.done? 'checked':''} onchange="toggleTask(${realIndex})">
+          <span class="task-text">${task.text}</span>
+        </div>
+        ${task.note? `<div class="task-note">${task.note}</div>` : ''}
+        <div class="task-footer">
+          <div>${task.date || ''} ${getBadge(task)}</div>
+          <button class="btn-delete" onclick="deleteTask(${realIndex})">Hapus</button>
+        </div>
+      </li>
+    `;
+  });
+}
+
+function renderHistory() {
+  const historyList = document.getElementById('historyList');
+  const doneTasks = tasks.filter(t => t.done && t.completedAt);
+  if(doneTasks.length === 0) {
+    historyList.innerHTML = '<p style="text-align:center; color:#94a3b8;">Belum ada tugas selesai</p>';
+    return;
+  }
+  historyList.innerHTML = doneTasks.map(t => `
+    <div class="history-item">
+      <b>${t.text}</b><br>
+      <small>Selesai pada: ${new Date(t.completedAt).toLocaleString('id-ID')}</small>
+    </div>
+  `).join('');
+}
+
+function addTask() {
+  const text = document.getElementById('taskInput').value.trim();
+  if(text === '') return alert('Tulis tugasnya dulu dong');
+  tasks.push({ text, note: document.getElementById('noteInput').value, date: document.getElementById('dateInput').value, done: false, completedAt: null });
+  document.getElementById('taskInput').value = '';
+  document.getElementById('noteInput').value = '';
+  document.getElementById('dateInput').value = '';
+  saveTasks(); renderTasks();
+}
+
+function toggleTask(index) {
+  const wasDone = tasks[index].done;
+  tasks[index].done =!tasks[index].done;
+  if(!wasDone && tasks[index].done) {
+    tasks[index].completedAt = new Date().toISOString();
+    showMessage();
+  }
+  if(wasDone &&!tasks[index].done) tasks[index].completedAt = null;
+  saveTasks(); renderTasks(); renderHistory();
+}
+
+function deleteTask(index) { if(confirm('Hapus tugas ini?')) { tasks.splice(index, 1); saveTasks(); renderTasks(); renderHistory(); } }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+function showTab(tab, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+}
+</script>
+
+</body>
+</html>
